@@ -1,12 +1,3 @@
-cona
-Filipe Berenguel Amaro dos Santos
-qua, 19/04/2023 15:50
-https://github.com/1fox4/RCOM-LAB3.git
-
-Traduzir a mensagem para: Português (Brasil)
-| Nunca traduzir do: Inglês
-Guilherme Manuel Carneiro Pereira
-Filipe Berenguel Amaro dos Santos
 /*Non-Canonical Input Processing*/
 
 #include <sys/types.h>
