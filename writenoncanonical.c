@@ -93,7 +93,6 @@ int main(int argc, char** argv)
         buf[res1]=0;               /* so we can printf... */
         aux[i]=buf[0];
         i++;
-        //printf("%s\n", aux);
         if (buf[0]=='\0'){
             printf("%s\n", aux);
             STOP=TRUE;
