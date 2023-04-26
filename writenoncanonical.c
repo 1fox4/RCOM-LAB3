@@ -5,6 +5,8 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <stdio.h>
+#include <string.h>
+#include <math.h>
 
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"
@@ -71,10 +73,16 @@ int main(int argc, char** argv)
 
     printf("New termios structure set\n");
 
+    unsigned char flag[8] = "0x5C";
+    unsigned char address[8] = "0x01";
+    unsigned char control[8] = "0x03";
+    unsigned char bcc[8];
+    strcpy(bcc, (char)address ^ (char)control);
+    unsigned char set[100];
+    sscanf(set, ("0x0001")); /*, flag, address, control, bcc, flag)*/
 
-    char palavra[255] = "ola\0";
-    for (i = 0; i < 4; i++) {
-        buf[i] = palavra[i];
+    for (i = 0; i < strlen(set) ; i++) {
+        buf[i] = set[i];
     }
 
 
