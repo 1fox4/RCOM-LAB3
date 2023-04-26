@@ -66,20 +66,94 @@ int main(int argc, char** argv)
     }
 
     printf("New termios structure set\n");
-    char aux[255];
+    char aux_FI[8], aux_A[8], aux_C[8], aux_B[8], aux_FF[8], set[128];
     int i=0;
     while (STOP==FALSE) {       /* loop for input */
         res = read(fd,buf,1);   /* returns after 5 chars have been input */
         buf[res]=0;               /* so we can printf... */
-        aux[i] = buf[0];
+        while(i < 2)
+            aux_FI[i] = buf[0];
+        while(2 <= i < 4)
+            aux_A[i] = buf[0];
+        while(4 <= i < 6)
+            aux_C[i] = buf[0];
+        while(6 <= i < 8)
+            aux_B[i] = buf[0];
+        while(8 <= i < 10)
+            aux_FF[i] = buf[0];
         i++;
        
         if (buf[0]=='\0'){
-        printf("%s\n", aux);
+        printf("aux_FI %s\n", aux_FI);
+        printf("aux_A %s\n", aux_A);
+        printf("aux_C %s\n", aux_C);
+        printf("aux_B %s\n", aux_B);
+        printf("aux_FF %s\n", aux_FF);
         STOP=TRUE;
         }
     }
-
+    typedef enum
+    {
+        START,
+        FLAG_RCV,
+        A_RCV,
+        C_RCV,
+        BCC_OK,
+        STOP;
+    }estados;
+    
+    estados currentstate = START;
+    
+    switch(currentstate){
+        case START:
+                if(aux_FI == "0x5C")
+                    currentstate = FLAG_RCV;
+                else 
+                    currentstate = START;
+            break; 
+            
+        case FLAG_RCV:
+                if(aux_A == "0x01" || aux_A == "0x03")
+                    currentstate = A_RCV;
+                if(aux_FI == "0x5C")
+                    currentstate = FLAG_RCV;
+                else
+                    currentstate = START;
+            break; 
+            
+        case A_RCV:
+                if(aux_C == "0x03" || aux_C == "0x0B" || aux_C == "0x07")
+                    currentstate = C_RCV;
+                if(aux_FI == "0x05")
+                    currentstate = FLAG_RCV;
+                else
+                    currentstate = START;
+            break; 
+            
+        case C_RCV:
+                char* test_BCC;
+                strcpy(teste_BCC, aux_A ^ AUX_C);
+                
+                if(teste_BCC == aux_BCC)
+                    currentstate = BCC_OK;
+                if(aux_FI == "0x05")
+                    currentstate = FLAG_RCV;
+                else
+                    currentstate = START;
+            break; 
+            
+        case BCC_OK:
+                if(aux_FF == aux_FI)
+                    currentstate = STOP;
+                else
+                    currentstate = START;
+            break; 
+            
+        case STOP:
+            currentstate = START;
+            break;    
+            
+    }
     res = write(fd,aux,strlen(aux)+1);
     printf("%d bytes written\n", res);
 
@@ -91,4 +165,3 @@ int main(int argc, char** argv)
     close(fd);
     return 0;
 }
-
