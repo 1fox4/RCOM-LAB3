@@ -79,7 +79,7 @@ int main(int argc, char** argv)
     unsigned char bcc[8];
     strcpy(bcc, (char)address ^ (char)control);
     unsigned char set[100];
-    sscanf(set, ("0x0001")); /*, flag, address, control, bcc, flag)*/
+    sprintf(set, ("0x0001")); /*, flag, address, control, bcc, flag)*/
 
     for (i = 0; i < strlen(set) ; i++) {
         buf[i] = set[i];
