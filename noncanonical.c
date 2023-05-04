@@ -66,32 +66,39 @@ int main(int argc, char** argv)
     }
 
     printf("New termios structure set\n");
-    char aux_FI[8], aux_A[8], aux_C[8], aux_B[8], aux_FF[8], set[128];
+    //unsigned char set[5] cd posiçao uma parte do set, aux_FI[], aux_A[], aux_C[], aux_B[], aux_FF[], set[];
+    //char test_BCC[64];
+    char aux[64];
     int i=0;
     while (STOP==FALSE) {       /* loop for input */
         res = read(fd,buf,1);   /* returns after 5 chars have been input */
         buf[res]=0;               /* so we can printf... */
-        while(i < 2)
-            aux_FI[i] = buf[0];
-        while(2 <= i < 4)
-            aux_A[i] = buf[0];
-        while(4 <= i < 6)
-            aux_C[i] = buf[0];
-        while(6 <= i < 8)
-            aux_B[i] = buf[0];
-        while(8 <= i < 10)
-            aux_FF[i] = buf[0];
+        aux[i]=buf[0];
         i++;
-       
         if (buf[0]=='\0'){
+            printf("%s\n", aux);
+            STOP=TRUE;
+        }
+    }
+    unsigned char aux_FI[8], test_BCC[8], aux_A[8], aux_C[8], aux_B[8], aux_FF[8];
+    for(i=0; i < strlen(aux); i++){
+        if(i < 2)
+            aux_FI[i] = aux[i];
+        if(i < 4  && i >= 2)
+            aux_A[i-2] = aux[i];
+        if(i < 6  && i >= 4)
+            aux_C[i-4] = aux[i];
+        if(i < 8  && i >= 6)
+            aux_B[i-6] = aux[i];
+        if(i < 10  && i >= 8)
+            aux_FF[i-8] = aux[i];
+    }
         printf("aux_FI %s\n", aux_FI);
         printf("aux_A %s\n", aux_A);
         printf("aux_C %s\n", aux_C);
         printf("aux_B %s\n", aux_B);
         printf("aux_FF %s\n", aux_FF);
-        STOP=TRUE;
-        }
-    }
+   
     typedef enum
     {
         START,
@@ -99,44 +106,49 @@ int main(int argc, char** argv)
         A_RCV,
         C_RCV,
         BCC_OK,
-        STOP;
+        STOP
     }estados;
     
     estados currentstate = START;
-    
+    int j=1;
+    while(j==1){
     switch(currentstate){
         case START:
-                if(aux_FI == "0x5C")
+                printf("1111\n");
+                
+                //if(strcmp(aux_FI, "5C"))
+                if(aux_FI == "5C")
                     currentstate = FLAG_RCV;
                 else 
                     currentstate = START;
             break; 
             
         case FLAG_RCV:
-                if(aux_A == "0x01" || aux_A == "0x03")
+                printf("t2222\n");
+                if(aux_A == "01" || aux_A == "03")
                     currentstate = A_RCV;
-                if(aux_FI == "0x5C")
+                if(aux_FI == "5C")
                     currentstate = FLAG_RCV;
                 else
                     currentstate = START;
             break; 
             
         case A_RCV:
-                if(aux_C == "0x03" || aux_C == "0x0B" || aux_C == "0x07")
+                printf("tfyedwfuewf\n");
+                if(aux_C == "03" || aux_C == "0B" || aux_C == "07")
                     currentstate = C_RCV;
-                if(aux_FI == "0x05")
+                if(aux_FI == "05")
                     currentstate = FLAG_RCV;
                 else
                     currentstate = START;
             break; 
             
         case C_RCV:
-                char* test_BCC;
-                strcpy(teste_BCC, aux_A ^ AUX_C);
-                
-                if(teste_BCC == aux_BCC)
+                strcpy(test_BCC, (char)aux_A ^ (char)aux_C);
+                printf("test %s\n", test_BCC);
+                if(test_BCC == aux_B)
                     currentstate = BCC_OK;
-                if(aux_FI == "0x05")
+                if(aux_FI == "05")
                     currentstate = FLAG_RCV;
                 else
                     currentstate = START;
@@ -150,9 +162,12 @@ int main(int argc, char** argv)
             break; 
             
         case STOP:
+            j=0;
+            strcpy(aux, "5C0107025C\0");
             currentstate = START;
             break;    
             
+    }
     }
     res = write(fd,aux,strlen(aux)+1);
     printf("%d bytes written\n", res);
