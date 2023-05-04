@@ -5,8 +5,11 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+//gcc -o wnc writenoncanonical.c
 
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"
@@ -71,40 +74,47 @@ int main(int argc, char** argv)
         exit(-1);
     }
 
-    printf("New termios structure set\n");
+    printf("\n---New termios structure set---\n\n");
 
-    unsigned char flag[8] = "0x5C";
-    unsigned char address[8] = "0x01";
-    unsigned char control[8] = "0x03";
-    unsigned char bcc[8];
+    /*unsigned char flag[] = "0x5C";
+    printf("flag: %s\n", flag);
+    unsigned char address[] = "0x01";
+    printf("address: %s\n", address);
+    unsigned char control[] = "0x03";
+    printf("control: %s\n", control);
+    unsigned char bcc[8] = ;
     strcpy(bcc, (char)address ^ (char)control);
+    printf("bcc: %s\n", bcc);
     unsigned char set[100];
-    sprintf(set, ("0x0001")); /*, flag, address, control, bcc, flag)*/
-
+    //sprintf(set, ("0x%s%s%s%s%s", flag, address, control, bcc, flag));
+/*
     for (i = 0; i < strlen(set) ; i++) {
-        buf[i] = set[i];
-    }
+        strcpy(buf[i], set[i]);
+    }*/
+    strcpy(buf, "0x5C0x010x030x020x5C\0");
+    printf("    Enviado: %s :: %d\n",buf, strlen(buf));
+
 
 
     /*testing*/
-    buf[25] = '\n';
 
-    res = write(fd,buf,4);
-    printf("%d bytes written\n", res);
+    res = write(fd,buf,255);
+    printf("***%d bytes written***\n", res);
 
-    printf("New different termios structure set\n");
+    printf("\n---New different termios structure set---\n\n");
     char aux[255];
     i=0;
 
     while (STOP==FALSE) {       /* loop for input */
         int res1 = read(fd,buf,1);   /* returns after 5 chars have been input */
+        //printf("***%d bytes lidos***\n", res1);
         buf[res1]=0;               /* so we can printf... */
         aux[i]=buf[0];
         i++;
         if (buf[0]=='\0'){
-            printf("%s\n", aux);
+            printf("    Recebido: %s :: %d\n\n", aux, strlen(aux));
             STOP=TRUE;
-        } 
+        }
     }  
 
     /*
