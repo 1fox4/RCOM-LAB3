@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 {
     int fd,c, res;
     struct termios oldtio,newtio;
-    char buf[255];
+    unsigned int buf;
     int i, sum = 0, speed = 0;
 
     if ( (argc < 2) ||
@@ -76,46 +76,39 @@ int main(int argc, char** argv)
 
     printf("\n---New termios structure set---\n\n");
 
-    /*unsigned char flag[] = "0x5C";
-    printf("flag: %s\n", flag);
-    unsigned char address[] = "0x01";
-    printf("address: %s\n", address);
-    unsigned char control[] = "0x03";
-    printf("control: %s\n", control);
-    unsigned char bcc[8] = ;
-    strcpy(bcc, (char)address ^ (char)control);
-    printf("bcc: %s\n", bcc);
-    unsigned char set[100];
-    //sprintf(set, ("0x%s%s%s%s%s", flag, address, control, bcc, flag));
-/*
-    for (i = 0; i < strlen(set) ; i++) {
-        strcpy(buf[i], set[i]);
-    }*/
-    strcpy(buf, "0x5C0x010x030x020x5C\0");
-    printf("    Enviado: %s :: %d\n",buf, strlen(buf));
-
-
+    unsigned int flag = 0x5C;
+    printf("flag: %x\n", flag);
+    unsigned int address = 0x01;
+    printf("address: %x\n", address);
+    unsigned int control = 0x03;
+    printf("control: %x\n", control);
+    unsigned int bcc = address ^ control;
+    printf("bcc: %x\n", bcc);
+    unsigned int set;
+    set = (((((((flag << 8) | address) << 8) | control) << 8) | bcc) << 8) | flag;
+    printf("Enviado: *%x*\n", set);
+    
 
     /*testing*/
 
-    res = write(fd,buf,255);
+    buf = set;
+    res = write(fd,buf,sizeof(buf));
     printf("***%d bytes written***\n", res);
 
     printf("\n---New different termios structure set---\n\n");
     char aux[255];
     i=0;
-
-    while (STOP==FALSE) {       /* loop for input */
-        int res1 = read(fd,buf,1);   /* returns after 5 chars have been input */
-        //printf("***%d bytes lidos***\n", res1);
-        buf[res1]=0;               /* so we can printf... */
+/*
+    while (STOP==FALSE) {       /* loop for input /
+        int res1 = read(fd,buf,1);   /* returns after 5 chars have been input /
+        buf[res1]=0;               /* so we can printf... /
         aux[i]=buf[0];
         i++;
         if (buf[0]=='\0'){
             printf("    Recebido: %s :: %d\n\n", aux, strlen(aux));
             STOP=TRUE;
         }
-    }  
+    }  */
 
     /*
     O ciclo FOR e as instruções seguintes devem ser alterados de modo a respeitar
